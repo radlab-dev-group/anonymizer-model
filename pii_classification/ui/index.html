@@ -117,25 +117,98 @@
             opacity: 0.95;
         }
 
-        .O { background: transparent; color: inherit; }
+        .O {
+            background: transparent;
+            color: inherit;
+        }
 
-        .LOCATION { background: transparent; box-shadow: none; color: inherit; }
-        .PERSON { background: transparent; box-shadow: none; color: inherit; }
-        .OTHER { background: transparent; box-shadow: none; color: inherit; }
-        .EVENT { background: transparent; box-shadow: none; color: inherit; }
-        .FACILITY { background: transparent; box-shadow: none; color: inherit; }
-        .CONTACT_NUM { background: transparent; box-shadow: none; color: inherit; }
-        .ORGANIZATION { background: transparent; box-shadow: none; color: inherit; }
-        .PRODUCT { background: transparent; box-shadow: none; color: inherit; }
+        .LOCATION {
+            background: transparent;
+            box-shadow: none;
+            color: inherit;
+        }
 
-        .LOCATION small { background: #eafaf1; color: #1e8449; }
-        .PERSON small { background: #eaf4fb; color: #2471a3; }
-        .OTHER small { background: #fdecea; color: #c0392b; }
-        .EVENT small { background: #fef9e7; color: #b7950b; }
-        .FACILITY small { background: #f5eef8; color: #8e44ad; }
-        .CONTACT_NUM small { background: #f0f3f4; color: #566573; }
-        .ORGANIZATION small { background: #e9f7ef; color: #1e8449; }
-        .PRODUCT small { background: #fdeaea; color: #a93226; }
+        .PERSON {
+            background: transparent;
+            box-shadow: none;
+            color: inherit;
+        }
+
+        .OTHER {
+            background: transparent;
+            box-shadow: none;
+            color: inherit;
+        }
+
+        .EVENT {
+            background: transparent;
+            box-shadow: none;
+            color: inherit;
+        }
+
+        .FACILITY {
+            background: transparent;
+            box-shadow: none;
+            color: inherit;
+        }
+
+        .CONTACT_NUM {
+            background: transparent;
+            box-shadow: none;
+            color: inherit;
+        }
+
+        .ORGANIZATION {
+            background: transparent;
+            box-shadow: none;
+            color: inherit;
+        }
+
+        .PRODUCT {
+            background: transparent;
+            box-shadow: none;
+            color: inherit;
+        }
+
+        .LOCATION small {
+            background: #eafaf1;
+            color: #1e8449;
+        }
+
+        .PERSON small {
+            background: #eaf4fb;
+            color: #2471a3;
+        }
+
+        .OTHER small {
+            background: #fdecea;
+            color: #c0392b;
+        }
+
+        .EVENT small {
+            background: #fef9e7;
+            color: #b7950b;
+        }
+
+        .FACILITY small {
+            background: #f5eef8;
+            color: #8e44ad;
+        }
+
+        .CONTACT_NUM small {
+            background: #f0f3f4;
+            color: #566573;
+        }
+
+        .ORGANIZATION small {
+            background: #e9f7ef;
+            color: #1e8449;
+        }
+
+        .PRODUCT small {
+            background: #fdeaea;
+            color: #a93226;
+        }
     </style>
 </head>
 <body>
@@ -186,10 +259,6 @@
             .replace(/'/g, '&#39;');
     }
 
-    function normalizeToken(word) {
-        return word.replace(/▁/g, ' ');
-    }
-
     // ------------------------------------------------------------------
     // Main inference call – includes selected model
     // ------------------------------------------------------------------
@@ -221,7 +290,7 @@
             let html = '';
 
             data.predictions.forEach(item => {
-                const word = normalizeToken(item.word);
+                const word = item.word;
                 const label = item.label;
 
                 if (label === 'O') {
