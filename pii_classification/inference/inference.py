@@ -5,14 +5,22 @@ from transformers import AutoTokenizer, AutoModelForTokenClassification
 
 
 class AnonPredictor:
-    def __init__(self, model_path: str):
+    def __init__(self, model_path: str, use_quantized: bool = False):
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-        self.model = AutoModelForTokenClassification.from_pretrained(model_path)
 
         with open(f"{model_path}/id2label.json", "r") as f:
             self.id2label = json.load(f)
 
-        self.model.eval()
+        model = AutoModelForTokenClassification.from_pretrained(model_path)
+        model.eval()
+
+        self.model = (
+            torch.quantization.quantize_dynamic(
+                model, {torch.nn.Linear}, dtype=torch.qint8
+            )
+            if use_quantized
+            else model
+        )
 
     def predict(self, text: str):
         # Tokenize input with offset_mapping to preserve original formatting
@@ -59,21 +67,15 @@ class AnonPredictor:
             word_text = text[start:end]
 
             # 2. Handle RoBERTa/XLM-R leading whitespace
-            # If this is the start of a new word,
-            # check if the token starts with whitespace
             if word_id != (word_ids[i - 1] if i > 0 else None):
                 stripped_word = word_text.lstrip()
                 whitespace = word_text[: len(word_text) - len(stripped_word)]
                 if whitespace:
-                    # The leading space should be 'O', not part of the entity
                     results.append({"word": whitespace, "label": "O"})
                     word_text = stripped_word
 
             # 3. Handle sub-tokens: merge them into one word
             if word_id == (word_ids[i - 1] if i > 0 else None):
-                # Append to the last added word (which might be a sub-token
-                # or the stripped word) We find the last element
-                # that corresponds to the current word_id
                 results[-1]["word"] += word_text
             else:
                 results.append({"word": word_text, "label": label})
@@ -85,68 +87,70 @@ class AnonPredictor:
             results.append({"word": text[last_end_char:], "label": "O"})
 
         # ==========================================================================
-        # Merge adjacent identical labels
-        if not results:
-            return results
+        # 1. Clean leading and trailing punctuation from entities
+        # We do this BEFORE merging, so punctuation acts as a barrier.
+        cleaned_results = []
+        punctuation = ".,!?;:)]}"
 
-        merged = []
+        for item in results:
+            if item["label"] != "O" and item["word"]:
+                word = item["word"]
+                label = item["label"]
+
+                # Extract leading punctuation
+                leading = ""
+                while word and word[0] in punctuation:
+                    leading += word[0]
+                    word = word[1:]
+
+                # Extract trailing punctuation
+                trailing = ""
+                while word and word[-1] in punctuation:
+                    trailing = word[-1] + trailing
+                    word = word[:-1]
+
+                if leading:
+                    cleaned_results.append({"word": leading, "label": "O"})
+                if word:
+                    cleaned_results.append({"word": word, "label": label})
+                if trailing:
+                    cleaned_results.append({"word": trailing, "label": "O"})
+            else:
+                cleaned_results.append(item)
+
+        # ==========================================================================
+        # 2. Merge adjacent identical labels with strict gap check
+        if not cleaned_results:
+            return cleaned_results
+
+        final_results = []
         i = 0
-        while i < len(results):
-            curr = results[i]
-            if not merged:
-                merged.append(curr)
+        while i < len(cleaned_results):
+            curr = cleaned_results[i]
+            if not final_results:
+                final_results.append(curr)
                 i += 1
                 continue
 
-            prev = merged[-1]
+            prev = final_results[-1]
 
             # Case 1: Same label (not 'O') -> Merge immediately
             if curr["label"] == prev["label"] and curr["label"] != "O":
                 prev["word"] += curr["word"]
                 i += 1
-            # Case 2: Current is 'O' (whitespace/punctuation)
-            # and the NEXT is the same label as prev
+            # Case 2: Current is 'O'. Check if it's ONLY whitespace AND next is same label
             elif (
-                i + 1 < len(results)
+                i + 1 < len(cleaned_results)
                 and curr["label"] == "O"
                 and curr["word"].strip() == ""
-                and results[i + 1]["label"] == prev["label"]
+                and cleaned_results[i + 1]["label"] == prev["label"]
                 and prev["label"] != "O"
             ):
-
-                # Absorb the gap and the next token into the previous entity
-                prev["word"] += curr["word"] + results[i + 1]["word"]
-
-                # Skip current 'O' and the next merged token
+                # Merge only if the gap is pure whitespace (no commas/dots)
+                prev["word"] += curr["word"] + cleaned_results[i + 1]["word"]
                 i += 2
             else:
-                merged.append(curr)
+                final_results.append(curr)
                 i += 1
-        # ==========================================================================
-        # Clean up trailing punctuation from entities
-        final_results = []
-        # Define punctuation that should not be part of an entity if it's at the end
-        trailing_punct = ".,!?;:)]}"
-
-        for item in merged:
-            if item["label"] != "O" and item["word"]:
-                word = item["word"]
-                punct_part = ""
-
-                # Extract all trailing punctuation characters
-                while word and word[-1] in trailing_punct:
-                    punct_part = word[-1] + punct_part
-                    word = word[:-1]
-
-                if punct_part:
-                    # Add the cleaned word as the entity
-                    if word:
-                        final_results.append({"word": word, "label": item["label"]})
-                    # Add the punctuation as 'O'
-                    final_results.append({"word": punct_part, "label": "O"})
-                else:
-                    final_results.append(item)
-            else:
-                final_results.append(item)
 
         return final_results

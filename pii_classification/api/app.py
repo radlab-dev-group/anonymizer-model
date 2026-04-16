@@ -1,7 +1,7 @@
-# app.py
 import os
-from flask import Flask, request, jsonify
+
 from flask_cors import CORS
+from flask import Flask, request, jsonify
 
 from pii_classification.inference.inference import AnonPredictor
 
@@ -14,11 +14,17 @@ CORS(app)  # Enable CORS for UI interaction
 MODEL_PATHS = {
     "20260416_130732": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260416_130732/final_model",
     "20260416_153326": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260416_153326/final_model",
+    "20260416_200957": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260416_200957/final_model",
 }
 
-# Load a predictor for every model at startup (can be lazy‑loaded if memory is a concern)
+USE_QUANTIZATION = True
+
+# Load a predictor for every model at startup
 PREDICTORS = {
-    name: AnonPredictor(os.path.abspath(path)) for name, path in MODEL_PATHS.items()
+    name: AnonPredictor(
+        model_path=os.path.abspath(path), use_quantized=USE_QUANTIZATION
+    )
+    for name, path in MODEL_PATHS.items()
 }
 
 # Choose a default model – the first one in the dict
