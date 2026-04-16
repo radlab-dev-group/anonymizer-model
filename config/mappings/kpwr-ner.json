@@ -1,0 +1,14 @@
+{
+  "nam_adj_country": "LOCATION",
+  "nam_adj_city": "LOCATION",
+  "nam_adj_person": "PERSON",
+  "nam_liv": "PERSON",
+  "nam_loc": "LOCATION",
+  "nam_fac": "FACILITY",
+  "nam_org": "ORGANIZATION",
+  "nam_pro": "PRODUCT",
+  "nam_eve": "EVENT",
+  "nam_num": "CONTACT/NUM",
+  "nam_adj": "OTHER",
+  "nam_oth": "OTHER"
+}
