@@ -1,7 +1,6 @@
+import sys
 import json
 import argparse
-import os
-import sys
 
 
 def convert_conll_to_jsonl(input_file, output_file):
