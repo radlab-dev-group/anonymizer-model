@@ -1,4 +1,4 @@
-Download dataset `clarin-pl/kpwr-ner` and store iob files to `dataset/kpwr/raw/` 
+Download dataset [`clarin-pl/kpwr-ner`](https://huggingface.co/datasets/clarin-pl/kpwr-ner) and store iob files to `dataset/kpwr/raw/` 
 
 Convert files (train and test)
 ```shell
