@@ -19,3 +19,10 @@ pii-classifier generalise \
   -m config/mappings/kpwr-ner.json \
   -o dataset/kpwr/converted/generalised/kpwr-ner-genral-whole.jsonl
 ```
+
+Prepare report with class distribution (general)
+```shell
+pii-classifier report \
+  -i dataset/kpwr/converted/generalised/kpwr-ner-genral-whole.jsonl \
+  -o dataset/kpwr/converted/generalised/kpwr-ner-genral-whole-report.xlsx
+```
