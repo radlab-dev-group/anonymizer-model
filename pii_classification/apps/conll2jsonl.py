@@ -1,3 +1,9 @@
+"""
+python3 pii_classification/apps/conll2jsonl.py \
+    -i /mnt/data2/data/datasets/clarin-pl-kpwr-ner/kpwr-ner-n82-test.iob \
+    -o dataset/kpwr/kpwr-ner-n82-test.jsonl
+"""
+
 import sys
 import json
 import argparse
