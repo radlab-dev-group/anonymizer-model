@@ -1,4 +1,20 @@
-# pyproject.toml
+[project]
+name = "pii-classification"
+version = "0.1.0"
+description = ""
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "pandas",
+    "xlsxwriter",
+]
+
+[tool.setuptools]
+packages = ["pii_classification"]
+
+[project.scripts]
+pii-classifier = "pii_classification.cli.main:main"
+
 [tool.black]
 line-length = 85
 target-version = ["py310", "py311", "py312"]
