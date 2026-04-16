@@ -41,6 +41,19 @@
             border-color: #5dade2;
         }
 
+        /* ---------- Model selector ---------- */
+        #modelSelect {
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto 20px auto;
+            display: block;
+            padding: 8px 10px;
+            font-size: 1rem;
+            border: 1px solid #dce1e6;
+            border-radius: 6px;
+            background-color: #fff;
+        }
+
         /* ---------- Button ---------- */
         button {
             display: block;
@@ -82,14 +95,14 @@
         /* ---------- Entity styling ---------- */
         .entity {
             display: inline;
-            padding: 2px 4px; /* trochę wewnętrznego odstępu */
-            margin: 0 1px; /* lekki odstęp między anotacjami */
-            border-radius: 4px; /* zaokrąglenie rogów */
+            padding: 2px 4px;
+            margin: 0 1px;
+            border-radius: 4px;
             font-weight: inherit;
             background: transparent;
             box-shadow: none;
             color: inherit;
-            border: 1px solid rgba(0, 0, 0, 0.15); /* delikatna ramka */
+            border: 1px solid rgba(0, 0, 0, 0.15);
         }
 
         .entity small {
@@ -104,102 +117,31 @@
             opacity: 0.95;
         }
 
-        .O {
-            background: transparent;
-            color: inherit;
-        }
+        .O { background: transparent; color: inherit; }
 
-        .LOCATION {
-            background: transparent;
-            box-shadow: none;
-            color: inherit;
-        }
+        .LOCATION { background: transparent; box-shadow: none; color: inherit; }
+        .PERSON { background: transparent; box-shadow: none; color: inherit; }
+        .OTHER { background: transparent; box-shadow: none; color: inherit; }
+        .EVENT { background: transparent; box-shadow: none; color: inherit; }
+        .FACILITY { background: transparent; box-shadow: none; color: inherit; }
+        .CONTACT_NUM { background: transparent; box-shadow: none; color: inherit; }
+        .ORGANIZATION { background: transparent; box-shadow: none; color: inherit; }
+        .PRODUCT { background: transparent; box-shadow: none; color: inherit; }
 
-        .PERSON {
-            background: transparent;
-            box-shadow: none;
-            color: inherit;
-        }
-
-        .OTHER {
-            background: transparent;
-            box-shadow: none;
-            color: inherit;
-        }
-
-        .EVENT {
-            background: transparent;
-            box-shadow: none;
-            color: inherit;
-        }
-
-        .FACILITY {
-            background: transparent;
-            box-shadow: none;
-            color: inherit;
-        }
-
-        .CONTACT_NUM {
-            background: transparent;
-            box-shadow: none;
-            color: inherit;
-        }
-
-        .ORGANIZATION {
-            background: transparent;
-            box-shadow: none;
-            color: inherit;
-        }
-
-        .PRODUCT {
-            background: transparent;
-            box-shadow: none;
-            color: inherit;
-        }
-
-        .LOCATION small {
-            background: #eafaf1;
-            color: #1e8449;
-        }
-
-        .PERSON small {
-            background: #eaf4fb;
-            color: #2471a3;
-        }
-
-        .OTHER small {
-            background: #fdecea;
-            color: #c0392b;
-        }
-
-        .EVENT small {
-            background: #fef9e7;
-            color: #b7950b;
-        }
-
-        .FACILITY small {
-            background: #f5eef8;
-            color: #8e44ad;
-        }
-
-        .CONTACT_NUM small {
-            background: #f0f3f4;
-            color: #566573;
-        }
-
-        .ORGANIZATION small {
-            background: #e9f7ef;
-            color: #1e8449;
-        }
-
-        .PRODUCT small {
-            background: #fdeaea;
-            color: #a93226;
-        }
+        .LOCATION small { background: #eafaf1; color: #1e8449; }
+        .PERSON small { background: #eaf4fb; color: #2471a3; }
+        .OTHER small { background: #fdecea; color: #c0392b; }
+        .EVENT small { background: #fef9e7; color: #b7950b; }
+        .FACILITY small { background: #f5eef8; color: #8e44ad; }
+        .CONTACT_NUM small { background: #f0f3f4; color: #566573; }
+        .ORGANIZATION small { background: #e9f7ef; color: #1e8449; }
+        .PRODUCT small { background: #fdeaea; color: #a93226; }
     </style>
 </head>
 <body>
 <h1>Anno-model Tester</h1>
+
+<select id="modelSelect"></select>
 
 <textarea id="inputText" placeholder="Wpisz polski tekst…"></textarea>
 <button onclick="runInference()">Analyze Text</button>
@@ -207,6 +149,34 @@
 <div id="result">Wyniki pojawią się tutaj…</div>
 
 <script>
+    const API_BASE = 'http://192.168.100.71:5001';
+
+    // ------------------------------------------------------------------
+    // Populate the model selector on page load
+    // ------------------------------------------------------------------
+    async function loadModels() {
+        try {
+            const resp = await fetch(`${API_BASE}/models`);
+            const data = await resp.json();
+
+            const select = document.getElementById('modelSelect');
+            select.innerHTML = ''; // clear any existing options
+
+            data.models.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                if (name === data.default) opt.selected = true;
+                select.appendChild(opt);
+            });
+        } catch (e) {
+            console.error('Failed to load model list:', e);
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Utility helpers
+    // ------------------------------------------------------------------
     function escapeHtml(text) {
         return text
             .replace(/&/g, '&amp;')
@@ -220,9 +190,13 @@
         return word.replace(/▁/g, ' ');
     }
 
+    // ------------------------------------------------------------------
+    // Main inference call – includes selected model
+    // ------------------------------------------------------------------
     async function runInference() {
         const text = document.getElementById('inputText').value.trim();
         const resultDiv = document.getElementById('result');
+        const model = document.getElementById('modelSelect').value;
 
         if (!text) {
             resultDiv.innerHTML = '<em>Proszę wpisać tekst do analizy.</em>';
@@ -232,10 +206,10 @@
         resultDiv.innerHTML = '<em>Przetwarzanie…</em>';
 
         try {
-            const response = await fetch('http://192.168.100.71:5001/predict', {
+            const response = await fetch(`${API_BASE}/predict`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({text})
+                body: JSON.stringify({text, model})
             });
             const data = await response.json();
 
@@ -263,6 +237,11 @@
             resultDiv.innerHTML = `<span style="color:#c0392b;">Error connecting to API: ${e}</span>`;
         }
     }
+
+    // ------------------------------------------------------------------
+    // Initialise UI
+    // ------------------------------------------------------------------
+    document.addEventListener('DOMContentLoaded', loadModels);
 </script>
 </body>
 </html>

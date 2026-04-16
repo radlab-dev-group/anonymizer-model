@@ -3,7 +3,7 @@ import json
 from transformers import AutoTokenizer, AutoModelForTokenClassification
 
 
-class NERPredictor:
+class AnonPredictor:
     def __init__(self, model_path: str):
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
         self.model = AutoModelForTokenClassification.from_pretrained(model_path)
