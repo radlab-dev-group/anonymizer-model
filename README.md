@@ -30,6 +30,6 @@ Prepare report with class distribution (general)
 
 ```shell
 pii-classifier report \
-  -i dataset/kpwr/converted/generalised/kpwr-ner-genral-whole.jsonl \
-  -o dataset/kpwr/converted/generalised/kpwr-ner-genral-whole-report.xlsx
+  -i dataset/kpwr/converted/generalised/kpwr-ner-general-whole.jsonl \
+  -o dataset/kpwr/converted/generalised/kpwr-ner-general-whole-report.xlsx
 ```
