@@ -19,6 +19,7 @@ MODEL_PATHS = {
     # "20260416_215846": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260416_215846/final_model",
     "20260417_202327": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260417_202327/final_model",
     "20260417_201615": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260417_201615/final_model",
+    "20260417_213751": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260417_213751/final_model",
 }
 
 USE_QUANTIZATION = True

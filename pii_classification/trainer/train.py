@@ -1,11 +1,14 @@
 import os
 import json
+import torch
 import wandb
+import random
 
 import numpy as np
+
 from datasets import Dataset
 from datetime import datetime
-from seqeval.metrics import classification_report
+from sklearn.metrics import classification_report
 
 from transformers import (
     AutoModelForTokenClassification,
@@ -17,8 +20,18 @@ from transformers import (
     TrainerControl,
 )
 
-from data_processor import NERDataProcessor
 from rdl_ml_utils.handlers.wandb_handler import WanDBHandler
+
+from data_processor import AnnoDataProcessor
+
+
+def set_seed(seed: int):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 
 class _WandbConfig:
@@ -58,7 +71,12 @@ def compute_metrics(p):
         for prediction, label in zip(predictions, labels)
     ]
 
-    report = classification_report(true_labels, true_predictions, output_dict=True)
+    true_predictions_flat = [p for seq in true_predictions for p in seq]
+    true_labels_flat = [l for seq in true_labels for l in seq]
+
+    report = classification_report(
+        true_labels_flat, true_predictions_flat, output_dict=True
+    )
 
     return {
         "precision_macro": report["macro avg"]["precision"],
@@ -74,13 +92,18 @@ def main(config_path: str, data_path: str):
     with open(config_path, "r") as f:
         config = json.load(f)
 
+    seed = config.get("seed", 42)
+    set_seed(seed)
+
     now_str = datetime.now().strftime("%Y%m%d_%H%M%S")
     out_dir = os.path.join(config["output_dir"], now_str)
     os.makedirs(out_dir, exist_ok=True)
 
     # 1. Data Processing
-    processor = NERDataProcessor(config["model_name"], config["max_length"])
+    processor = AnnoDataProcessor(config["model_name"], config["max_length"])
     raw_data = processor.load_jsonl(data_path)
+    random.shuffle(raw_data)
+
     label2id, id2label = processor.create_label_mappings(raw_data)
 
     with open(os.path.join(out_dir, "label2id.json"), "w") as f:
@@ -117,6 +140,7 @@ def main(config_path: str, data_path: str):
     # 3. Training Arguments
     training_args = TrainingArguments(
         output_dir=out_dir,
+        seed=seed,
         num_train_epochs=config["epochs"],
         per_device_train_batch_size=config["train_batch_size"],
         per_device_eval_batch_size=config["eval_batch_size"],
@@ -137,7 +161,7 @@ def main(config_path: str, data_path: str):
     # 4. Setup W&B
     run_name = f"run_{now_str}"
     wandb_cfg = _WandbConfig()
-    wandb_cfg.BASE_RUN_NAME = config["wb_project"]
+    wandb_cfg.PROJECT_NAME = config["wb_project"]
 
     run_cfg = {
         **config,
@@ -165,9 +189,6 @@ def main(config_path: str, data_path: str):
 
     # Rozpoczęcie treningu
     trainer.train()
-
-    # Dzięki load_best_model_at_end=True, w tym momencie trainer.model
-    # zawiera wagi z najlepszego checkpointu na podstawie metric_for_best_model.
 
     # Zapisujemy najlepszy model do osobnego katalogu final_model
     final_model_dir = os.path.join(out_dir, "final_model")

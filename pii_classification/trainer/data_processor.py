@@ -3,7 +3,7 @@ from typing import List, Dict, Tuple
 from transformers import AutoTokenizer
 
 
-class NERDataProcessor:
+class AnnoDataProcessor:
     def __init__(self, model_name: str, max_length: int = 128):
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.max_length = max_length
