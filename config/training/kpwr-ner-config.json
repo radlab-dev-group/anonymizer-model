@@ -1,11 +1,20 @@
 {
+  "seed": 42,
   "model_name": "/mnt/data2/llms/models/community/PKOBP/polish-roberta-8k",
-  "train_batch_size": 8,
-  "eval_batch_size": 8,
-  "learning_rate": 2e-5,
-  "epochs": 5,
-  "weight_decay": 0.01,
-  "max_length": 128,
   "wb_project": "anonymizer-model-project",
-  "output_dir": "./anon_model_output"
+  "max_length": 128,
+  "output_dir": "./anon_model_output",
+  "epochs": 5,
+  "train_batch_size": 16,
+  "eval_batch_size": 16,
+  "learning_rate": 5e-5,
+  "weight_decay": 0.01,
+  "eval_steps": 100,
+  "logging_steps": 50,
+  "save_steps": 500,
+  "eval_strategy": "steps",
+  "save_strategy": "steps",
+  "logging_strategy": "steps",
+  "load_best_model_at_end": true,
+  "metric_for_best_model": "f1_macro"
 }

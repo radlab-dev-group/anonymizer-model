@@ -12,14 +12,8 @@ CORS(app)  # Enable CORS for UI interaction
 # Model registry – map a friendly name to the absolute path of the model
 # ----------------------------------------------------------------------
 MODEL_PATHS = {
-    "20260416_130732": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260416_130732/final_model",
-    # "20260416_153326": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260416_153326/final_model",
-    # "20260416_171018": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260416_171018/final_model",
-    # "20260416_200957": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260416_200957/final_model",
-    # "20260416_215846": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260416_215846/final_model",
-    "20260417_202327": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260417_202327/final_model",
-    "20260417_201615": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260417_201615/final_model",
-    "20260417_213751": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260417_213751/final_model",
+    "1-PLC: 20260417_213751": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260417_213751/final_model",
+    "2-PLC: 20260416_130732": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260416_130732/final_model",
 }
 
 USE_QUANTIZATION = True
