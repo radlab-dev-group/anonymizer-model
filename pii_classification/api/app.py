@@ -13,8 +13,10 @@ CORS(app)  # Enable CORS for UI interaction
 # ----------------------------------------------------------------------
 MODEL_PATHS = {
     "20260416_130732": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260416_130732/final_model",
-    "20260416_153326": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260416_153326/final_model",
-    "20260416_200957": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260416_200957/final_model",
+    # "20260416_153326": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260416_153326/final_model",
+    # "20260416_171018": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260416_171018/final_model",
+    # "20260416_200957": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260416_200957/final_model",
+    "20260416_215846": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260416_215846/final_model",
 }
 
 USE_QUANTIZATION = True
@@ -57,7 +59,9 @@ def predict():
     predictor = PREDICTORS[model_name]
 
     try:
-        predictions = predictor.predict(text)
+        predictions = predictor.predict(
+            text=text, clean_punct=True, merge_entities=True, handle_gaps=True
+        )
         return jsonify({"model": model_name, "predictions": predictions})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
