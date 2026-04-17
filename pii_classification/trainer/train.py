@@ -31,8 +31,6 @@ class _WandbConfig:
 
 
 class WandbLoggingCallback(TrainerCallback):
-    """Callback przesyłający logi z Trainer-a do W&B za pomocą WanDBHandler."""
-
     def __init__(self, handler: WanDBHandler):
         self.handler = handler
 
@@ -62,7 +60,6 @@ def compute_metrics(p):
 
     report = classification_report(true_labels, true_predictions, output_dict=True)
 
-    # Logujemy zarówno średnie Macro, jak i Weighted, aby mieć pełny obraz precyzji i recallu
     return {
         "precision_macro": report["macro avg"]["precision"],
         "recall_macro": report["macro avg"]["recall"],
@@ -81,18 +78,16 @@ def main(config_path: str, data_path: str):
     out_dir = os.path.join(config["output_dir"], now_str)
     os.makedirs(out_dir, exist_ok=True)
 
-    # 1. Data Processing (potrzebne do ustalenia num_labels przed TrainingArguments)
+    # 1. Data Processing
     processor = NERDataProcessor(config["model_name"], config["max_length"])
     raw_data = processor.load_jsonl(data_path)
     label2id, id2label = processor.create_label_mappings(raw_data)
 
-    # Save mappings
     with open(os.path.join(out_dir, "label2id.json"), "w") as f:
         json.dump(label2id, f)
     with open(os.path.join(out_dir, "id2label.json"), "w") as f:
         json.dump(id2label, f)
 
-    # Prepare Dataset
     split = int(len(raw_data) * 0.8)
     train_raw = raw_data[:split]
     eval_raw = raw_data[split:]
@@ -116,7 +111,6 @@ def main(config_path: str, data_path: str):
         label2id=label2id,
     )
 
-    # Global map for metrics
     global label_map
     label_map = id2label
 
@@ -128,18 +122,23 @@ def main(config_path: str, data_path: str):
         per_device_eval_batch_size=config["eval_batch_size"],
         learning_rate=config["learning_rate"],
         weight_decay=config["weight_decay"],
-        eval_strategy="epoch",
-        save_strategy="epoch",
-        load_best_model_at_end=True,
-        report_to="none",  # Wyłączamy domyślny raport, bo używamy WanDBHandler
-        logging_strategy="step",
-        logging_steps=10,
+        eval_strategy=config.get("eval_strategy", "steps"),
+        logging_strategy=config.get("logging_strategy", "steps"),
+        save_strategy=config.get("save_strategy", "steps"),
+        eval_steps=config.get("eval_steps", 100),
+        logging_steps=config.get("logging_steps", 50),
+        save_steps=config.get("save_steps", 100),
+        load_best_model_at_end=config.get("load_best_model_at_end", True),
+        metric_for_best_model=config.get("metric_for_best_model", "f1_macro"),
+        greater_is_better=True,
+        report_to="none",
     )
 
-    # 4. Setup W&B via WanDBHandler
+    # 4. Setup W&B
     run_name = f"run_{now_str}"
     wandb_cfg = _WandbConfig()
-    # Dodajemy training_args do konfiguracji run_cfg, aby były widoczne w W&B
+    wandb_cfg.BASE_RUN_NAME = config["wb_project"]
+
     run_cfg = {
         **config,
         "train_start_time": now_str,
@@ -152,7 +151,6 @@ def main(config_path: str, data_path: str):
     )
 
     # 5. Trainer Setup
-    # Przekazujemy klasę WanDBHandler jako handler do callbacka
     callbacks = [WandbLoggingCallback(WanDBHandler)]
 
     trainer = Trainer(
@@ -165,14 +163,19 @@ def main(config_path: str, data_path: str):
         callbacks=callbacks,
     )
 
+    # Rozpoczęcie treningu
     trainer.train()
 
-    # Save final model
+    # Dzięki load_best_model_at_end=True, w tym momencie trainer.model
+    # zawiera wagi z najlepszego checkpointu na podstawie metric_for_best_model.
+
+    # Zapisujemy najlepszy model do osobnego katalogu final_model
     final_model_dir = os.path.join(out_dir, "final_model")
     trainer.save_model(final_model_dir)
     processor.tokenizer.save_pretrained(final_model_dir)
 
-    # Zamykamy sesję WandB
+    print(f"✅ Najlepszy model został zapisany w: {final_model_dir}")
+
     WanDBHandler.finish_wand()
 
 
