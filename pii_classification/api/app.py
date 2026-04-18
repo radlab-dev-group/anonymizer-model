@@ -65,5 +65,30 @@ def predict():
 
 
 # ----------------------------------------------------------------------
+# API: predict_and_anonymize – replace entities with tags
+# ----------------------------------------------------------------------
+@app.route("/predict_and_anonymize", methods=["POST"])
+def predict_and_anonymize():
+    data = request.json or {}
+    text = data.get("text", "")
+    model_name = data.get("model", DEFAULT_MODEL)
+    labels = data.get("labels", [])
+
+    if not text:
+        return jsonify({"error": "No text provided"}), 400
+
+    if model_name not in PREDICTORS:
+        return jsonify({"error": f"Model '{model_name}' not found"}), 400
+
+    predictor = PREDICTORS[model_name]
+
+    try:
+        result = predictor.predict_and_anonymize(text=text, labels=labels)
+        return jsonify({"model": model_name, **result})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ----------------------------------------------------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=False)

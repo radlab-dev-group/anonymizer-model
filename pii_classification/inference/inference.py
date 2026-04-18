@@ -1,8 +1,9 @@
-# -*- coding: utf-8 -*-
 import json
 import torch
-from transformers import AutoTokenizer, AutoModelForTokenClassification
+import datetime
+
 from typing import List, Dict, Any
+from transformers import AutoTokenizer, AutoModelForTokenClassification
 
 
 class AnonPredictor:
@@ -75,6 +76,50 @@ class AnonPredictor:
             aligned = self._merge_adjacent(aligned)
 
         return aligned
+
+    def predict_and_anonymize(
+        self,
+        text: str,
+        labels: List[str] = None,
+        clean_punct: bool = True,
+        merge_entities: bool = True,
+        handle_gaps: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Predict entities and replace them with anonymization tags.
+        """
+        predictions = self.predict(
+            text,
+            clean_punct=clean_punct,
+            merge_entities=merge_entities,
+            handle_gaps=handle_gaps,
+        )
+
+        # If labels list is empty or None, anonymize all labels except "O"
+        if not labels:
+            target_labels = set(self.id2label.values()) - {"O"}
+        else:
+            target_labels = set(labels)
+
+        dt_str = int(datetime.datetime.now().timestamp() * 1_000_000)
+        anonymized_text = ""
+        mapping = {}
+        counter = 1
+
+        for item in predictions:
+            word = item["word"]
+            label = item["label"]
+
+            if label in target_labels:
+                # Format: {LABEL_timestamp_index}
+                tag = f"{{{label}_{dt_str}_{counter}}}"
+                mapping[tag] = word
+                anonymized_text += tag
+                counter += 1
+            else:
+                anonymized_text += word
+
+        return {"text": anonymized_text, "mapping": mapping}
 
     # --------------------------------------------------------------------- #
     # Private helper methods
