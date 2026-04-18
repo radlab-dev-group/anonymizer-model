@@ -112,14 +112,15 @@ class AnonPredictor:
 
             if label in target_labels:
                 # Format: {LABEL_timestamp_index}
-                tag = f"{{{label}_{dt_str}_{counter}}}"
+                tag = f"{label}_{dt_str}_{counter}"
+                tag_curly = f"{{{tag}}}"
                 mapping[tag] = word
-                anonymized_text += tag
+                anonymized_text += tag_curly
                 counter += 1
             else:
                 anonymized_text += word
 
-        return {"text": anonymized_text, "mapping": mapping}
+        return {"text": anonymized_text, "mappings": mapping}
 
     # --------------------------------------------------------------------- #
     # Private helper methods
