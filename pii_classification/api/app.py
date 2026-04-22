@@ -1,5 +1,3 @@
-import os
-
 from flask_cors import CORS
 from flask import Flask, request, jsonify
 
@@ -19,9 +17,7 @@ USE_QUANTIZATION = True
 
 # Load a predictor for every model at startup
 PREDICTORS = {
-    name: AnonPredictor(
-        model_path=os.path.abspath(path), use_quantized=USE_QUANTIZATION
-    )
+    name: AnonPredictor(model_path=path, use_quantized=USE_QUANTIZATION)
     for name, path in MODEL_PATHS.items()
 }
 
