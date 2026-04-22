@@ -14,8 +14,6 @@ class AnonPredictor:
     def __init__(self, model_path: str, use_quantized: bool = False):
         # Tokenizer & label map
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-        with open(f"{model_path}/id2label.json", "r", encoding="utf-8") as f:
-            self.id2label = json.load(f)
 
         # Load (optionally quantized) model
         model = AutoModelForTokenClassification.from_pretrained(model_path)
@@ -27,6 +25,10 @@ class AnonPredictor:
             if use_quantized
             else model
         )
+
+        self.id2label = {
+            str(_k): _v for _k, _v in dict(self.model.config.id2label).items()
+        }
 
     # --------------------------------------------------------------------- #
     # Public API
@@ -94,6 +96,8 @@ class AnonPredictor:
             merge_entities=merge_entities,
             handle_gaps=handle_gaps,
         )
+
+        print("predictions=", predictions)
 
         # If labels list is empty or None, anonymize all labels except "O"
         if not labels:

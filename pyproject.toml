@@ -9,6 +9,7 @@ dependencies = [
     "xlsxwriter",
     "seqeval",
     "sacremoses",
+    "flask_cors",
     "ml-utils @ git+https://github.com/radlab-dev-group/ml-utils.git",
 ]
 

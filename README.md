@@ -85,7 +85,7 @@ python pii_classification/trainer/train.py
 The API allows you to load multiple model versions and perform predictions.
 
 ```textmate
-python pii_classification/api/app.py
+python3 -m pii_classification.api.app
 ```
 
 **Endpoints:**
@@ -94,10 +94,18 @@ python pii_classification/api/app.py
 - `POST /predict`: Accepts JSON with `text` and optional `model` name. Returns a list of tokens and their predicted PII
   labels.
 
-### Web Interface
+### Web Interface (under development)
 
 Open `pii_classification/ui/index.html` in a browser to interact with the API. The UI allows you to select a model,
 input Polish text, and see highlighted PII entities.
+
+Or simple python-like http server:
+```bash
+cd anonymizer-model/pii_classification/ui
+python3 -m http.server
+
+>> Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000/) ...
+```
 
 ## CLI Reference
 
