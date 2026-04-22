@@ -9,15 +9,10 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for UI interaction
 
 # ----------------------------------------------------------------------
-# Model registry – map a friendly name to the absolute path of the model
+# Model registry
 # ----------------------------------------------------------------------
 MODEL_PATHS = {
-    "1-PLC: 20260417_213751": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260417_213751/final_model",
-    # "2-PLC: 20260416_130732": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260416_130732/final_model",
-    # "HerBert: run_20260420_025107": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260420_025107/final_model",
-    # "HerBert: run_20260420_024752": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260420_024752/final_model",
-    # "HerBert: run_20260420_031220": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260420_031220/final_model",
-    # "HerBert: run_20260420_031233": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260420_031233/final_model",
+    "radlab/pii-pl-v1.0": "radlab/pii-pl-v1.0",
 }
 
 USE_QUANTIZATION = True
