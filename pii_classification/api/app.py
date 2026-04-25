@@ -11,6 +11,8 @@ CORS(app)  # Enable CORS for UI interaction
 # ----------------------------------------------------------------------
 MODEL_PATHS = {
     "radlab/pii-pl-v1.0": "radlab/pii-pl-v1.0",
+    "20260425_024354": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260425_024354/final_model",
+    "20260425_035012": "/mnt/data2/dev/develop/anonymizer-model/anon_model_output/20260425_035012/final_model",
 }
 
 USE_QUANTIZATION = True
