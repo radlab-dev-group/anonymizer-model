@@ -40,6 +40,11 @@ The project is designed to work with datasets like `clarin-pl/kpwr-ner`.
 pii-classifier convert \
      -i dataset/kpwr/raw/kpwr-ner-n82-train-tune.iob \
      -o dataset/kpwr/converted/specific/kpwr-ner-n82-train-tune.jsonl
+
+
+pii-classifier convert \
+     -i dataset/kpwr/raw/kpwr-ner-n82-test.iob \
+     -o dataset/kpwr/converted/specific/kpwr-ner-n82-test.jsonl
 ```
 
 3. **Generalize Labels**:
@@ -100,6 +105,7 @@ Open `pii_classification/ui/index.html` in a browser to interact with the API. T
 input Polish text, and see highlighted PII entities.
 
 Or simple python-like http server:
+
 ```bash
 cd anonymizer-model/pii_classification/ui
 python3 -m http.server
