@@ -5,7 +5,9 @@ from transformers import AutoTokenizer
 
 class AnnoDataProcessor:
     def __init__(self, model_name: str, max_length: int = 128):
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            model_name, add_prefix_space=True
+        )
         self.max_length = max_length
 
     def create_label_mappings(self, data: List[Dict]) -> Tuple[Dict, Dict]:

@@ -156,6 +156,7 @@ def main(config_path: str, data_path: str):
         metric_for_best_model=config.get("metric_for_best_model", "f1_macro"),
         greater_is_better=True,
         report_to="none",
+        max_grad_norm=config.get("max_grad_norm", 2.0),
     )
 
     # 4. Setup W&B

@@ -13,7 +13,7 @@ class AnonPredictor:
 
     def __init__(self, model_path: str, use_quantized: bool = False):
         # Tokenizer & label map
-        self.tokenizer = AutoTokenizer.from_pretrained(model_path)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=True)
 
         # Load (optionally quantized) model
         model = AutoModelForTokenClassification.from_pretrained(model_path)
@@ -132,25 +132,55 @@ class AnonPredictor:
     def _tokenize(self, text: str):
         """
         Tokenize ``text`` and return the token ids, offset mapping, and word ids.
+        Handles long texts by splitting them into chunks.
         """
-        inputs = self.tokenizer(
+        # Tokenize the whole text without truncation to get all offsets/word_ids
+        full_inputs = self.tokenizer(
             text,
             return_tensors="pt",
-            truncation=True,
-            padding=True,
+            truncation=False,
             return_offsets_mapping=True,
         )
-        offsets_tensor = inputs.pop("offset_mapping")
-        with torch.no_grad():
-            outputs = self.model(**inputs)
-            predictions = torch.argmax(outputs.logits, dim=2)
 
-        # Convert tensors to plain Python lists for easier handling
-        tokens = predictions[0].tolist()
-        offsets = offsets_tensor[0].tolist()
-        word_ids = inputs.word_ids(batch_index=0)
+        input_ids = full_inputs["input_ids"][0]
+        attention_mask = full_inputs["attention_mask"][0]
+        offsets_tensor = full_inputs["offset_mapping"][0]
+        word_ids = full_inputs.word_ids(batch_index=0)
 
-        return tokens, offsets, word_ids
+        # Remove special tokens ([CLS], [SEP]) for chunking logic
+        # Most transformers use [CLS] at start and [SEP] at end
+        core_ids = input_ids[1:-1]
+        core_mask = attention_mask[1:-1]
+        core_offsets = offsets_tensor[1:-1].tolist()
+        core_word_ids = word_ids[1:-1]
+
+        # Define chunk size (model max len - 2 for special tokens)
+        max_len = min(self.tokenizer.model_max_length, 512)
+        chunk_size = max_len - 2
+
+        all_predictions = []
+
+        # Process in chunks
+        for i in range(0, len(core_ids), chunk_size):
+            chunk_ids = core_ids[i : i + chunk_size]
+            chunk_mask = core_mask[i : i + chunk_size]
+
+            # Re-wrap with special tokens for the model
+            cls_id = torch.tensor([self.tokenizer.cls_token_id])
+            sep_id = torch.tensor([self.tokenizer.sep_token_id])
+
+            batch_ids = torch.cat([cls_id, chunk_ids, sep_id]).unsqueeze(0)
+            batch_mask = torch.cat(
+                [torch.tensor([1]), chunk_mask, torch.tensor([1])]
+            ).unsqueeze(0)
+
+            with torch.no_grad():
+                outputs = self.model(input_ids=batch_ids, attention_mask=batch_mask)
+                # Take argmax and remove special tokens predictions [1:-1]
+                predictions = torch.argmax(outputs.logits, dim=2)[0][1:-1].tolist()
+                all_predictions.extend(predictions)
+
+        return all_predictions, core_offsets, core_word_ids
 
     def _align_predictions(
         self,

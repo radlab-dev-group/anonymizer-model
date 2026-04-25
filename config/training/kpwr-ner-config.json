@@ -1,6 +1,6 @@
 {
   "seed": 42,
-  "model_name": "/mnt/data2/llms/models/community/PKOBP/polish-roberta-8k",
+  "model_name": "/mnt/data2/llms/models/radlab-open/polish-cross-encoder",
   "wb_project": "anonymizer-model-project",
   "max_length": 128,
   "output_dir": "./anon_model_output",
@@ -12,6 +12,7 @@
   "eval_steps": 100,
   "logging_steps": 50,
   "save_steps": 500,
+  "max_grad_norm": 2.0,
   "eval_strategy": "steps",
   "save_strategy": "steps",
   "logging_strategy": "steps",
