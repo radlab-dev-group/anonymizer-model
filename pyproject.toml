@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["pii_classification"]
+packages = { find = { where = ["."] } }
 
 [project.scripts]
 pii-classifier = "pii_classification.cli.main:main"
