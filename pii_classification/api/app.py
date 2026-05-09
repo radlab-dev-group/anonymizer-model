@@ -1,7 +1,14 @@
+import os
+
 from flask_cors import CORS
 from flask import Flask, request, jsonify
 
 from pii_classification.inference.inference import AnonPredictor
+
+
+ANON_API_PORT = int(os.getenv("ANON_API_PORT", 5001))
+ANON_API_DEBUG = os.getenv("ANON_API_DEBUG", "false").lower() in ("1", "true", "yes")
+
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for UI interaction
@@ -86,4 +93,4 @@ def predict_and_anonymize():
 
 # ----------------------------------------------------------------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001, debug=False)
+    app.run(host="0.0.0.0", port=ANON_API_PORT, debug=ANON_API_DEBUG)
