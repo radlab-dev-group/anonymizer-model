@@ -17,6 +17,8 @@ class AnonPredictor:
         # Tokenizer & label map
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
 
+        # TODO: Load model on the given ``device``
+
         # Load (optionally quantized) model
         model = AutoModelForTokenClassification.from_pretrained(model_path)
         model.eval()
