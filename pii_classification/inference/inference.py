@@ -11,7 +11,9 @@ class AnonPredictor:
     Token‑classification predictor with optional post‑processing steps.
     """
 
-    def __init__(self, model_path: str, use_quantized: bool = False):
+    def __init__(
+        self, model_path: str, use_quantized: bool = False, device: str = "cpu"
+    ):
         # Tokenizer & label map
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
 
