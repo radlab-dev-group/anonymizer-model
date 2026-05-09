@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "pii-classification"
 version = "0.1.0"
@@ -13,8 +17,8 @@ dependencies = [
     "ml-utils @ git+https://github.com/radlab-dev-group/ml-utils.git",
 ]
 
-[tool.setuptools]
-packages = { find = { where = ["."] } }
+[tool.setuptools.packages.find]
+where = ["."]
 
 [project.scripts]
 pii-classifier = "pii_classification.cli.main:main"
