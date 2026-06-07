@@ -2,3 +2,4 @@ torch
 transformers
 onnx
 onnxruntime
+onnxscript
