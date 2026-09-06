@@ -5,7 +5,7 @@ import argparse
 from pathlib import Path
 from typing import Final
 from onnxruntime.quantization import QuantType, quantize_dynamic
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from transformers import AutoModelForTokenClassification, AutoTokenizer
 
 
 DEFAULT_OPSET: Final[int] = 17
@@ -30,7 +30,7 @@ def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(
         description=(
-            "Export a local Transformers/PyTorch sequence classification model "
+            "Export a local Transformers/PyTorch token classification model "
             "to ONNX on CPU, with optional INT8 dynamic quantization."
         )
     )
@@ -122,7 +122,7 @@ def export_to_onnx(
     onnx_path = output_dir / ONNX_MODEL_FILENAME
 
     print(f"Loading model from: {model_path}")
-    model = AutoModelForSequenceClassification.from_pretrained(str(model_path))
+    model = AutoModelForTokenClassification.from_pretrained(str(model_path))
     tokenizer = AutoTokenizer.from_pretrained(str(model_path))
 
     model.eval()
@@ -137,9 +137,23 @@ def export_to_onnx(
     )
 
     print(f"Exporting model to ONNX: {onnx_path}")
+
+    # Token classification models expect keyword arguments, not a tuple.
+    # We wrap the model so that onnx.export receives (input_ids, attention_mask)
+    # but forwards them as kwargs internally.
+    class _TokenClassifierWrapper(torch.nn.Module):
+        def __init__(self, model: torch.nn.Module):
+            super().__init__()
+            self.model = model
+
+        def forward(self, input_ids: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
+            return self.model(input_ids=input_ids, attention_mask=attention_mask).logits
+
+    wrapped_model = _TokenClassifierWrapper(model)
+
     with torch.no_grad():
         torch.onnx.export(
-            model,
+            wrapped_model,
             (input_ids, attention_mask),
             str(onnx_path),
             input_names=["input_ids", "attention_mask"],
@@ -155,6 +169,7 @@ def export_to_onnx(
                 },
                 "logits": {
                     0: "batch_size",
+                    1: "sequence_length",
                 },
             },
             opset_version=opset,
