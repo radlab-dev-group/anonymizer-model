@@ -29,6 +29,18 @@ cd anonymizer-model
 pip install .
 ```
 
+By default, `pip install .` installs only the core dependencies required to run the Flask API
+(`flask_cors`, `radlab-ml-utils`).
+
+If you also need the data processing, training, and reporting tools (CONLL conversion, label
+generalization, Excel reports), install the optional `deps` extra:
+
+```textmate
+pip install .[deps]
+```
+
+which additionally installs `pandas`, `xlsxwriter`, `seqeval`, and `sacremoses`.
+
 ## Data Preparation
 
 The project is designed to work with datasets like `clarin-pl/kpwr-ner`.
