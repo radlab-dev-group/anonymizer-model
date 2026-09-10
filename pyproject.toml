@@ -9,12 +9,16 @@ description = ""
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
+    "flask_cors",
+    "radlab-ml-utils>=1.0.0",
+]
+
+[project.optional-dependencies]
+deps = [
     "pandas",
     "xlsxwriter",
     "seqeval",
     "sacremoses",
-    "flask_cors",
-    "radlab-ml-utils>=1.0.0",
 ]
 
 [tool.setuptools.packages.find]
