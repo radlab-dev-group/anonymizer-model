@@ -9,16 +9,32 @@ description = ""
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
+    "flask",
     "flask_cors",
     "radlab-ml-utils>=1.0.0",
+    "numpy",
+    "torch",
+    "transformers",
+    "datasets",
 ]
 
 [project.optional-dependencies]
-deps = [
+train = [
+    "scikit-learn",
+    "wandb",
+]
+
+report = [
     "pandas",
     "xlsxwriter",
-    "seqeval",
-    "sacremoses",
+]
+
+test = [
+    "pytest",
+]
+
+deps = [
+    "radlab-pii-classification[train,report]",
 ]
 
 [tool.setuptools.packages.find]
