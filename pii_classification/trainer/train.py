@@ -22,7 +22,7 @@ from transformers import (
 
 from rdl_ml_utils.handlers.wandb_handler import WanDBHandler
 
-from data_processor import AnnoDataProcessor
+from pii_classification.trainer.data_processor import AnnoDataProcessor
 
 
 def set_seed(seed: int):
