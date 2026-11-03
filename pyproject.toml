@@ -13,15 +13,15 @@ dependencies = [
     "flask_cors",
     "radlab-ml-utils>=1.0.0",
     "numpy",
-    "torch",
-    "transformers",
-    "datasets",
 ]
 
 [project.optional-dependencies]
 train = [
     "scikit-learn",
     "wandb",
+    "torch",
+    "transformers",
+    "datasets",
 ]
 
 report = [
