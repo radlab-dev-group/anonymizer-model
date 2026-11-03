@@ -101,8 +101,6 @@ class AnonPredictor:
             handle_gaps=handle_gaps,
         )
 
-        print("predictions=", predictions)
-
         # If labels list is empty or None, anonymize all labels except "O"
         if not labels:
             target_labels = set(self.id2label.values()) - {"O"}
@@ -187,6 +185,9 @@ class AnonPredictor:
             raw_label = self.id2label.get(str(token_ids[i]), "O")
             label = raw_label.replace("B-", "").replace("I-", "")
 
+            start = max(start, last_end_char)
+            if start >= end:
+                continue
             word_text = text[start:end]
 
             # ---- Leading whitespace for RoBERTa / XLM‑R -----------------------
