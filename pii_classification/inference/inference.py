@@ -180,6 +180,7 @@ class AnonPredictor:
             if handle_gaps and start > last_end_char:
                 gap_text = text[last_end_char:start]
                 results.append({"word": gap_text, "label": "O"})
+                last_end_char = start
 
             # Normalize label (strip B-/I- prefixes)
             raw_label = self.id2label.get(str(token_ids[i]), "O")
@@ -187,6 +188,7 @@ class AnonPredictor:
 
             start = max(start, last_end_char)
             if start >= end:
+                last_end_char = max(last_end_char, end)
                 continue
             word_text = text[start:end]
 
