@@ -5,9 +5,6 @@ from pii_classification.converters.conll2jsonl import convert_conll_to_jsonl
 from pii_classification.analysis.jsonl_generalise_labels import (
     analyze_pii_distribution as generalise_labels,
 )
-from pii_classification.analysis.labels_distribution_report import (
-    analyze_pii_distribution as generate_report,
-)
 
 
 def _add_common_arguments(parser):
@@ -15,6 +12,15 @@ def _add_common_arguments(parser):
     parser.add_argument(
         "-v", "--verbose", action="store_true", help="Enable verbose output"
     )
+
+
+def _generate_report(input_files, output):
+    """Generate the Excel report, importing pandas/xlsxwriter only on demand."""
+    from pii_classification.analysis.labels_distribution_report import (
+        analyze_pii_distribution,
+    )
+
+    analyze_pii_distribution(input_files, output)
 
 
 def main():
@@ -72,7 +78,7 @@ def main():
         generalise_labels(args.input, args.mapping, args.output)
 
     elif args.command == "report":
-        generate_report(args.input, args.output)
+        _generate_report(args.input, args.output)
 
     else:
         root_parser.print_help()

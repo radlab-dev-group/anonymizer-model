@@ -29,17 +29,24 @@ cd anonymizer-model
 pip install .
 ```
 
-By default, `pip install .` installs only the core dependencies required to run the Flask API
-(`flask_cors`, `radlab-ml-utils`).
+By default, `pip install .` installs the core dependencies required to run the Flask API and the
+`pii-classifier convert` / `generalise` commands: `flask`, `flask_cors`, `radlab-ml-utils`,
+`numpy`, `torch`, `transformers`, and `datasets`.
 
-If you also need the data processing, training, and reporting tools (CONLL conversion, label
-generalization, Excel reports), install the optional `deps` extra:
+Optional extras cover the rest of the tooling:
+
+| Extra    | Installs                 | Needed for                                      |
+|:---------|:-------------------------|:------------------------------------------------|
+| `train`  | `scikit-learn`, `wandb`  | Training the model (`pii_classification/trainer`) |
+| `report` | `pandas`, `xlsxwriter`   | `pii-classifier report` (Excel distribution reports) |
+| `test`   | `pytest`                 | Test tooling                                    |
+| `deps`   | `train` + `report`       | Everything except `test`                        |
+
+For example, to get core dependencies plus training and reporting tools:
 
 ```textmate
 pip install .[deps]
 ```
-
-which additionally installs `pandas`, `xlsxwriter`, `seqeval`, and `sacremoses`.
 
 ## Data Preparation
 
@@ -110,6 +117,8 @@ python3 -m pii_classification.api.app
 - `GET /models`: Returns a list of available models and the default model.
 - `POST /predict`: Accepts JSON with `text` and optional `model` name. Returns a list of tokens and their predicted PII
   labels.
+- `POST /predict_and_anonymize`: Accepts JSON with `text`, optional `model` name, and a `labels` list. Returns the text
+  with the selected PII entities replaced by tags.
 
 ### Web Interface (under development)
 
